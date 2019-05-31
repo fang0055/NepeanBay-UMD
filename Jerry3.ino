@@ -13,11 +13,11 @@
 const int blue_led = 6;
 const int red_led = 3;
 const int green_led = 5;
-// static long frequency = 0 ;
 static float frequency = 0; // pin 49 --> PIN # IS IN LIBRARY
 double sum = 0;
 int count = 0;
 const int avg = 15;
+unsigned long dataSavedTime = 0;
 // static int x = 1;
 char sample[]={"\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)"};
 
@@ -91,8 +91,11 @@ void loop() {
 }
 
 void Frequency(){
+  // FreqMeasure needs "zero handling" method to set frequency to zero. 
+  // References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
   if (FreqMeasure.available()) {
     // average several readings together
+    dataSavedTime = millis();
     sum = sum + FreqMeasure.read();
     count = count + 1;
     if (count > avg) {
@@ -102,7 +105,13 @@ void Frequency(){
       reset();
     }
   }
-  else{
+  else if ( millis() - dataSavedTime > 300 ){
+    // This is a Zero Handling. 
+    // Add calculation on how much time has passed since we could get data last time and then determine if we consider the frequency is 0.
+    // In this statement means, it's already 300 milliseconds passed which is long enough for us to regard the frequency as 0.
+    // And if the time that has passed is less than 300 milliseconds, then we do nothing. 
+    // Because this is most likely just the interval of the FreqMeasure function.
+      frequency = 0;
       digitalWrite( blue_led, LOW);
       analogWrite( red_led, 100);
       digitalWrite( green_led, LOW);
@@ -131,7 +140,6 @@ void sdCard(){
 
 void reset(){
   count = 0;
-  frequency = 0;
   sum = 0;
 }
 
