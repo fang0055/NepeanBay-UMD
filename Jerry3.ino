@@ -8,24 +8,24 @@
 
 /* ================================= METAL DETECTOR ================================= */
 #include <FreqMeasure.h>
-#define blue_led 6
-#define red_led 3
-#define green_led 5
+const int blue_led = 6;
+const int red_led = 3;
+const int green_led = 5;
 static long fq = 0 ;
-static long frequency = 0; // pin 49 --> PIN # IS IN LIBRARY
-long sum = 0;
+static float frequency = 0; // pin 49 --> PIN # IS IN LIBRARY
+double sum = 0;
 int count = 0;
-int avg = 15;
+const int avg = 15;
 static int x = 1;
 char sample[]={"\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)"};
 
 /*========== THRESHOLD ==========*/
-int red=10;
-int green=150;
-int yellow=250;
-int purple=400;
-int lblue=550;
-int whites=700;
+const int red=10;
+const int green=150;
+const int yellow=250;
+const int purple=400;
+const int lblue=550;
+const int whites=700;
 
 /*=======================RTC========================================================*/
 #include <DS3231.h>
