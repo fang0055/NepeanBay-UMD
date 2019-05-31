@@ -13,12 +13,14 @@
 const int blue_led = 6;
 const int red_led = 3;
 const int green_led = 5;
+// use float instead of long refer to the official documentation. References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
+// use int won't cause any errors though. Will only get an int instead of float number.
 static float frequency = 0; // pin 49 --> PIN # IS IN LIBRARY
+// use double instead of long refer to the official documentation. References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
 double sum = 0;
 int count = 0;
-const int avg = 15;
+const int avg = 20;
 unsigned long dataSavedTime = 0;
-// static int x = 1;
 char sample[]={"\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)"};
 
 /*========== THRESHOLD ==========*/
@@ -57,13 +59,6 @@ void setup(){
   pinMode(red_led,OUTPUT);
   pinMode(green_led ,OUTPUT);
   rtc.begin();
-  
-//  if (x == 1){
-//    //The following lines can be uncommented to set the date and time
-//    //rtc.setDOW(WEDNESDAY);     // Set Day-of-Week to SUNDAY
-//    //rtc.setTime(11, 18, 0);     // Set the time to 12:00:00 (24hr format)
-//    //rtc.setDate(15, 5, 2019);   // Set the date to January 1st, 2014 (dd, mm, yyyy)
-//  }
 
   /* =========================== CREATE A NEW FILE =========================== */
 
@@ -76,12 +71,14 @@ void setup(){
       break;  // leave the loop!
     }
   }
+  
   if (mySensorData){
     mySensorData.println("UnderWater Metal Detector Data Logging Accessory Rev2.0\nDate of the test:,");
     mySensorData.println(rtc.getDateStr());
     mySensorData.println("Starting time:,");
     mySensorData.println(rtc.getTimeStr());
     // mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius),Red(10Hz),Green(150hz),Yellow(250Hz),Purple(400Hz),LightBlue(550Hz),LowWhite(700Hz)");
+    mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)");
     mySensorData.close();
   }
 }
@@ -135,7 +132,7 @@ void sdCard(){
   mySensorData.print(t);
   // mySensorData.print(",10,150,250,400,550,700,");
   mySensorData.close();
-  //close the file
+  // close the file
 }
 
 void reset(){
