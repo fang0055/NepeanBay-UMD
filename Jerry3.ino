@@ -143,46 +143,47 @@ void reset(){
 void ledLIGHT() {
   // frequency <= red may be most likely to happen in real operation, so put it in the first place will make the if else statement more efficient.
   // Because when the frequency is less than red, then the code will excute the code inside that situation then jump out of the whole if else statement.
-  if ( (frequency <= green) && (frequency > red) ){//Green
-    digitalWrite( blue_led, LOW);
-    digitalWrite( red_led, LOW);
-    digitalWrite( green_led, HIGH);
-    //delay(500);    
-  }
-  if ( (frequency <= yellow) && (frequency > green) ){//Yellow
-    digitalWrite(blue_led,LOW);
-    digitalWrite( red_led, HIGH);
-    digitalWrite( green_led, HIGH);
-    //delay(500);    
-  }
-  if ( (frequency <= purple) && (frequency > yellow) ){//Purple
-    digitalWrite( blue_led, HIGH);
-    digitalWrite( red_led, HIGH);
-    digitalWrite( green_led, LOW);
-    //delay(500);  
-  }
-  if ( (frequency <= lblue)&& (frequency > purple) ){//Lightblue
-    digitalWrite( blue_led, HIGH);
-    digitalWrite( red_led, LOW);
-    digitalWrite( green_led, HIGH);
-    //delay(500);  
-  }
-  if ( (frequency <= whites)&& (frequency > lblue) ){//Low White
-    analogWrite( blue_led, 200);
-    analogWrite( red_led, 100);
-    analogWrite( green_led, 200);    
-    //delay(500);
-  }
-  if (frequency > whites){//Full White
-    digitalWrite( blue_led, HIGH);
-    digitalWrite( red_led, HIGH);
-    digitalWrite( green_led, HIGH);
-    //delay(500);    
-  }
+  
   if (frequency <= red){//Red - No Signal
     digitalWrite( blue_led, LOW);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, LOW);
     //delay(500);
+  }
+  else if ( (frequency <= green) && (frequency > red) ){//Green
+    digitalWrite( blue_led, LOW);
+    digitalWrite( red_led, LOW);
+    digitalWrite( green_led, HIGH);
+    //delay(500);    
+  }
+  else if ( (frequency <= yellow) && (frequency > green) ){//Yellow
+    digitalWrite(blue_led,LOW);
+    digitalWrite( red_led, HIGH);
+    digitalWrite( green_led, HIGH);
+    //delay(500);    
+  }
+  else if ( (frequency <= purple) && (frequency > yellow) ){//Purple
+    digitalWrite( blue_led, HIGH);
+    digitalWrite( red_led, HIGH);
+    digitalWrite( green_led, LOW);
+    //delay(500);  
+  }
+  else if ( (frequency <= lblue)&& (frequency > purple) ){//Lightblue
+    digitalWrite( blue_led, HIGH);
+    digitalWrite( red_led, LOW);
+    digitalWrite( green_led, HIGH);
+    //delay(500);  
+  }
+  else if ( (frequency <= whites)&& (frequency > lblue) ){//Low White
+    analogWrite( blue_led, 200);
+    analogWrite( red_led, 100);
+    analogWrite( green_led, 200);    
+    //delay(500);
+  }
+  else {//Full White
+    digitalWrite( blue_led, HIGH);
+    digitalWrite( red_led, HIGH);
+    digitalWrite( green_led, HIGH);
+    //delay(500);    
   }
 }
