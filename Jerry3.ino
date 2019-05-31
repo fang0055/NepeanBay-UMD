@@ -8,15 +8,17 @@
 
 /* ================================= METAL DETECTOR ================================= */
 #include <FreqMeasure.h>
+// #define and const: 
+// According to Arduino official reference, const is prefered in most cases as they are almost the same.
 const int blue_led = 6;
 const int red_led = 3;
 const int green_led = 5;
-static long fq = 0 ;
+// static long frequency = 0 ;
 static float frequency = 0; // pin 49 --> PIN # IS IN LIBRARY
 double sum = 0;
 int count = 0;
 const int avg = 15;
-static int x = 1;
+// static int x = 1;
 char sample[]={"\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)"};
 
 /*========== THRESHOLD ==========*/
@@ -40,6 +42,7 @@ static char filename[] = "JERRY-00.csv";
 
 /* =================================    DHT    ================================= */
 #include <DHT.h>
+// using const will use more dynamic memory so here we should keep using #define
 #define DHTPIN 9
 #define DHTTYPE DHT11 // DHT11 sensor is smaller and blue the DHT22 is the white/larger 
 
@@ -55,12 +58,12 @@ void setup(){
   pinMode(green_led ,OUTPUT);
   rtc.begin();
   
-  if (x == 1){
-    //The following lines can be uncommented to set the date and time
-    //rtc.setDOW(WEDNESDAY);     // Set Day-of-Week to SUNDAY
-    //rtc.setTime(11, 18, 0);     // Set the time to 12:00:00 (24hr format)
-    //rtc.setDate(15, 5, 2019);   // Set the date to January 1st, 2014 (dd, mm, yyyy)
-  }
+//  if (x == 1){
+//    //The following lines can be uncommented to set the date and time
+//    //rtc.setDOW(WEDNESDAY);     // Set Day-of-Week to SUNDAY
+//    //rtc.setTime(11, 18, 0);     // Set the time to 12:00:00 (24hr format)
+//    //rtc.setDate(15, 5, 2019);   // Set the date to January 1st, 2014 (dd, mm, yyyy)
+//  }
 
   /* =========================== CREATE A NEW FILE =========================== */
 
@@ -73,18 +76,13 @@ void setup(){
       break;  // leave the loop!
     }
   }
-  if (! mySensorData){
-    //Couldn't create file
-  }
-  else{
-    /////////////
+  if (mySensorData){
     mySensorData.println("UnderWater Metal Detector Data Logging Accessory Rev2.0\nDate of the test:,");
     mySensorData.println(rtc.getDateStr());
     mySensorData.println("Starting time:,");
     mySensorData.println(rtc.getTimeStr());
-    mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius),Red(10Hz),Green(150hz),Yellow(250Hz),Purple(400Hz),LightBlue(550Hz),LowWhite(700Hz)");
+    // mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius),Red(10Hz),Green(150hz),Yellow(250Hz),Purple(400Hz),LightBlue(550Hz),LowWhite(700Hz)");
     mySensorData.close();
-    ////////////
   }
 }
     
@@ -99,8 +97,6 @@ void Frequency(){
     count = count + 1;
     if (count > avg) {
       frequency = FreqMeasure.countToFrequency(sum / count);
-      fq  = (((frequency+5)/10)*10);
-      //This line above adds 5 to the fq then div by 10 then multiply by 10--- ex.. 441 +5 = 446 / 10 = 46 * 10 = 460---- 446 + 5 = 451 / 10 = 45 * 10 =450
       ledLIGHT();
       sdCard();
       reset();
@@ -123,12 +119,12 @@ void sdCard(){
   mySensorData.print("\n");
   mySensorData.print(rtc.getTimeStr());
   mySensorData.print(",");
-  mySensorData.print(fq); //Print Your results
+  mySensorData.print(frequency); //Print Your results
   mySensorData.print(",");
   mySensorData.print(h);
   mySensorData.print(",");
   mySensorData.print(t);
-  mySensorData.print(",10,150,250,400,550,700,");
+  // mySensorData.print(",10,150,250,400,550,700,");
   mySensorData.close();
   //close the file
 }
@@ -137,49 +133,53 @@ void reset(){
   count = 0;
   frequency = 0;
   sum = 0;
-  fq = 0;
 }
 
 /* =================================    Visual LED Alerts    ================================= */
+// Using if...else is more efficient than just if. 
+// Becasue we don't need to check every situation once the frequency is and will only be in one of the range at a time.
+// And putting those most likely happend condition in first places will also make the code a little more efficient.
 
 void ledLIGHT() {
-  if ( (fq <= green) && (fq > red) ){//Green
+  // frequency <= red may be most likely to happen in real operation, so put it in the first place will make the if else statement more efficient.
+  // Because when the frequency is less than red, then the code will excute the code inside that situation then jump out of the whole if else statement.
+  if ( (frequency <= green) && (frequency > red) ){//Green
     digitalWrite( blue_led, LOW);
     digitalWrite( red_led, LOW);
     digitalWrite( green_led, HIGH);
     //delay(500);    
   }
-  if ( (fq <= yellow) && (fq > green) ){//Yellow
+  if ( (frequency <= yellow) && (frequency > green) ){//Yellow
     digitalWrite(blue_led,LOW);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, HIGH);
     //delay(500);    
   }
-  if ( (fq <= purple) && (fq > yellow) ){//Purple
+  if ( (frequency <= purple) && (frequency > yellow) ){//Purple
     digitalWrite( blue_led, HIGH);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, LOW);
     //delay(500);  
   }
-  if ( (fq <= lblue)&& (fq > purple) ){//Lightblue
+  if ( (frequency <= lblue)&& (frequency > purple) ){//Lightblue
     digitalWrite( blue_led, HIGH);
     digitalWrite( red_led, LOW);
     digitalWrite( green_led, HIGH);
     //delay(500);  
   }
-  if ( (fq <= whites)&& (fq > lblue) ){//Low White
+  if ( (frequency <= whites)&& (frequency > lblue) ){//Low White
     analogWrite( blue_led, 200);
     analogWrite( red_led, 100);
     analogWrite( green_led, 200);    
     //delay(500);
   }
-  if (fq > whites){//Full White
+  if (frequency > whites){//Full White
     digitalWrite( blue_led, HIGH);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, HIGH);
     //delay(500);    
   }
-  if (fq <= red){//Red - No Signal
+  if (frequency <= red){//Red - No Signal
     digitalWrite( blue_led, LOW);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, LOW);
