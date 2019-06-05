@@ -19,9 +19,9 @@ static float frequency = 0; // pin 49 --> PIN # IS IN LIBRARY
 // use double instead of long refer to the official documentation. References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
 double sum = 0;
 int count = 0;
-const int avg = 20;
+const int avg = 30;
 unsigned long dataSavedTime = 0;
-char sample[]={"\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)"};
+const char sample[]={"\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)"};
 
 /*========== THRESHOLD ==========*/
 const int red=10;
@@ -40,7 +40,7 @@ DS3231 rtc(SDA,SCL);
 
 int chipSelect = 10; //chipSelect pin for the SD card Reader
 File mySensorData; //Data object you will write your sensor data to
-static char filename[] = "JERRY-00.csv";
+static String filename;
 
 /* =================================    DHT    ================================= */
 #include <DHT.h>
@@ -53,6 +53,7 @@ DHT dht(DHTPIN, DHTTYPE); // This means(pin plugged in, type which is "DHT11")
 /* =========================== VOID SETUP (RUN ONCE) =========================== */
 void setup(){
   FreqMeasure.begin();
+  // Serial.begin(9600);
   pinMode(10, OUTPUT); //Must declare 10 an output and reserve it
   SD.begin(10); //Initialize the SD card reader
   pinMode(blue_led,OUTPUT);
@@ -62,25 +63,21 @@ void setup(){
 
   /* =========================== CREATE A NEW FILE =========================== */
 
-  for (uint8_t i = 0; i < 100; i++){
-    filename[6] = i / 10 + '0'; // ON THE 6TH CHARACTER IN YOUR FILE NAME IT RECOGNIZES THE NUMBER BASICALLY AND THIS LINE AND THE NEXT MAKES IT COUNT UP SO YOU DONT HAVE THE SAME FILE NAME 
-    filename[7] = i % 10 + '0';
-    if (! SD.exists(filename)){
-      // only open a new file if it doesn't exist
-      mySensorData = SD.open(filename, FILE_WRITE);
-      break;  // leave the loop!
-    }
-  }
-  
-  if (mySensorData){
-    mySensorData.println("UnderWater Metal Detector Data Logging Accessory Rev2.0\nDate of the test:,");
-    mySensorData.println(rtc.getDateStr());
-    mySensorData.println("Starting time:,");
-    mySensorData.println(rtc.getTimeStr());
-    // mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius),Red(10Hz),Green(150hz),Yellow(250Hz),Purple(400Hz),LightBlue(550Hz),LowWhite(700Hz)");
-    mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)");
-    mySensorData.close();
-  }
+  String timeString = rtc.getTimeStr();
+  timeString[2] = '.';
+  timeString[5] = '.';
+  // String timeString = String(rtc.getTime().hour) + '.' + String(rtc.getTime().min) + '.' + String(rtc.getTime().sec);
+  filename = String(rtc.getDateStr(FORMAT_LONG,FORMAT_BIGENDIAN)) + '-' + timeString;
+  // Serial.println(filename);
+  mySensorData = SD.open(filename, FILE_WRITE);
+  mySensorData.println("UnderWater Metal Detector Data Logging Accessory Rev2.0\nDate of the test:,");
+  mySensorData.println(rtc.getDateStr());
+  mySensorData.println("Starting time:,");
+  mySensorData.println(rtc.getTimeStr());
+  mySensorData.println("Color range:,");
+  mySensorData.println("Red(10Hz),Green(150hz),Yellow(250Hz),Purple(400Hz),LightBlue(550Hz),LowWhite(700Hz)");
+  mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)");
+  mySensorData.close();
 }
     
 void loop() {
@@ -108,11 +105,14 @@ void Frequency(){
     // In this statement means, it's already 300 milliseconds passed which is long enough for us to regard the frequency as 0.
     // And if the time that has passed is less than 300 milliseconds, then we do nothing. 
     // Because this is most likely just the interval of the FreqMeasure function.
-      frequency = 0;
-      digitalWrite( blue_led, LOW);
-      analogWrite( red_led, 100);
-      digitalWrite( green_led, LOW);
-      sdCard();
+    frequency = 0;
+    digitalWrite( blue_led, LOW);
+    analogWrite( red_led, 100);
+    digitalWrite( green_led, LOW);
+    sdCard();
+  }
+  else{
+    sdCard();
   }
 }
 
@@ -130,7 +130,6 @@ void sdCard(){
   mySensorData.print(h);
   mySensorData.print(",");
   mySensorData.print(t);
-  // mySensorData.print(",10,150,250,400,550,700,");
   mySensorData.close();
   // close the file
 }
