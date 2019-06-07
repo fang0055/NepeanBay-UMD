@@ -6,10 +6,10 @@
   Latest entry on May 15th, 2019
  */
 
-/* ================================= Libraries ================================= */
+/* ==================================== LIBRARIES ==================================== */
 
 #include <FreqMeasure.h>
-#include <SD.h> //Load SD card library
+#include <SD.h> // SD card library
 #include <DS3231.h> // real time clock
 #include <DHT.h>
 
@@ -20,9 +20,11 @@
 const int blue_led = 6;
 const int red_led = 3;
 const int green_led = 5;
+
 // use float instead of long refer to the official documentation. References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
 // use int won't cause any errors though. Will only get an int instead of float number.
 static float frequency = 0; // pin 49 --> PIN # IS IN LIBRARY
+
 // use double instead of long refer to the official documentation. References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
 double sum = 0;
 int count = 0;
@@ -30,7 +32,8 @@ const int avg = 30;
 unsigned long dataSavedTime = 0;
 const char sample[]={"\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)"};
 
-/*========== THRESHOLD ==========*/
+/*================================== THRESHOLD ====================================*/
+
 const int red=10;
 const int green=150;
 const int yellow=250;
@@ -38,57 +41,60 @@ const int purple=400;
 const int lblue=550;
 const int whites=700;
 
-/*=======================RTC========================================================*/
+/*===================================== RTC ======================================*/
 
 DS3231 rtc(SDA,SCL);
 
-/* ================================= SD READER ================================= */
+/* ================================= SD READER ================================== */
 
 int chipSelect = 10; //chipSelect pin for the SD card Reader
 File mySensorData; //Data object you will write your sensor data to
 static String filename;
 
-/* =================================    DHT    ================================= */
+/* ==================================== DHT ===================================== */
 
 // using const will use more dynamic memory so here we should keep using #define
 #define DHTPIN 9
 #define DHTTYPE DHT11 // DHT11 sensor is smaller and blue the DHT22 is the white/larger 
 DHT dht(DHTPIN, DHTTYPE); // This means(pin plugged in, type which is "DHT11")
 
+
+/* =========================== SET TIME ATTRIBUTE TO DATA FILES =========================== */
+
+void dateTime(unsigned int* date, unsigned int* time) {
+ // return date using FAT_DATE macro to format fields
+ *date = FAT_DATE(rtc.getTime().year, rtc.getTime().mon, rtc.getTime().date);
+ // return time using FAT_TIME macro to format fields
+ *time = FAT_TIME(rtc.getTime().hour, rtc.getTime().min, rtc.getTime().sec);
+}
+
 /* =========================== VOID SETUP (RUN ONCE) =========================== */
+
 void setup(){
   FreqMeasure.begin();
   Serial.begin(9600);
-  pinMode(10, OUTPUT); //Must declare 10 an output and reserve it
-  SD.begin(10); //Initialize the SD card reader
+  pinMode(chipSelect, OUTPUT); //Must declare 10 an output and reserve it
+  SD.begin(chipSelect); //Initialize the SD card reader
   pinMode(blue_led,OUTPUT);
   pinMode(red_led,OUTPUT);
   pinMode(green_led ,OUTPUT);
   rtc.begin();
 
-  /* =========================== CREATE A NEW FILE =========================== */
+  // rtc.setTime(14, 51, 07); // Set the time/calibrate the time (24hr format)
 
-//  String timeString = String(rtc.getTimeStr());
-//  timeString[2] = '-';
-//  timeString[5] = '-';
-//  String timeString = String(rtc.getTime().hour) + '.' + String(rtc.getTime().min) + '.' + String(rtc.getTime().sec);
-//  filename = String(rtc.getDateStr(FORMAT_LONG,FORMAT_BIGENDIAN));
-//  filename[4] = '-';
-//  filename[7] = '-';
-//  filename = filename + '_' + timeString + ".csv";
-//  filename = String(rtc.getDateStr(FORMAT_LONG,FORMAT_BIGENDIAN)) + ".csv";
-//  filename = String(rtc.getUnixTime(rtc.getTime()));
-//  filename = "12345678.csv";
-//  Serial.println(filename);
-//  SD.mkdir(filename);
+  SdFile::dateTimeCallback(dateTime);
 
+  //CREATE A Folder and NEW FILE
   String month = rtc.getMonthStr();
-  SD.mkdir(month);
+  if(!SD.exists(month)){
+    // create a folder using current month as its name
+    SD.mkdir(month);
+  }
   String timeString = rtc.getTimeStr();
-//  timeString = timeString[0] + timeString[1] + timeString[3] + timeString[4] + timeString[6] + timeString[7];
   String dateDay = rtc.getDateStr();
+  // the filename contains the full file path, such as "June/07112351"
   filename = month + '/' + dateDay[0] + dateDay[1] +timeString[0] + timeString[1] + timeString[3] + timeString[4] + timeString[6] + timeString[7] + ".csv";
-//  String test = "Hello";
+  // the file will be created inside the "month folder"
   mySensorData = SD.open(filename, FILE_WRITE);
   mySensorData.println("UnderWater Metal Detector Data Logging Accessory Rev2.0\nDate of the test:,");
   mySensorData.println(rtc.getDateStr());
@@ -151,7 +157,6 @@ void sdCard(){
   mySensorData.print(",");
   mySensorData.print(t);
   mySensorData.close();
-  // close the file
 }
 
 void reset(){
@@ -159,7 +164,8 @@ void reset(){
   sum = 0;
 }
 
-/* =================================    Visual LED Alerts    ================================= */
+/* =============================== Visual LED Alerts =============================== */
+
 // Using if...else is more efficient than just if. 
 // Becasue we don't need to check every situation once the frequency is and will only be in one of the range at a time.
 // And putting those most likely happend condition in first places will also make the code a little more efficient.
@@ -172,42 +178,35 @@ void ledLIGHT() {
     digitalWrite( blue_led, LOW);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, LOW);
-    //delay(500);
   }
   else if ( (frequency <= green) && (frequency > red) ){//Green
     digitalWrite( blue_led, LOW);
     digitalWrite( red_led, LOW);
     digitalWrite( green_led, HIGH);
-    //delay(500);    
   }
   else if ( (frequency <= yellow) && (frequency > green) ){//Yellow
     digitalWrite(blue_led,LOW);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, HIGH);
-    //delay(500);    
   }
   else if ( (frequency <= purple) && (frequency > yellow) ){//Purple
     digitalWrite( blue_led, HIGH);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, LOW);
-    //delay(500);  
   }
   else if ( (frequency <= lblue)&& (frequency > purple) ){//Lightblue
     digitalWrite( blue_led, HIGH);
     digitalWrite( red_led, LOW);
     digitalWrite( green_led, HIGH);
-    //delay(500);  
   }
   else if ( (frequency <= whites)&& (frequency > lblue) ){//Low White
     analogWrite( blue_led, 200);
     analogWrite( red_led, 100);
     analogWrite( green_led, 200);    
-    //delay(500);
   }
   else {//Full White
     digitalWrite( blue_led, HIGH);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, HIGH);
-    //delay(500);    
   }
 }
