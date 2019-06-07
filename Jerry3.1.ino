@@ -6,8 +6,15 @@
   Latest entry on May 15th, 2019
  */
 
-/* ================================= METAL DETECTOR ================================= */
+/* ================================= Libraries ================================= */
+
 #include <FreqMeasure.h>
+#include <SD.h> //Load SD card library
+#include <DS3231.h> // real time clock
+#include <DHT.h>
+
+/* ================================= METAL DETECTOR ================================= */
+
 // #define and const: 
 // According to Arduino official reference, const is prefered in most cases as they are almost the same.
 const int blue_led = 6;
@@ -32,28 +39,26 @@ const int lblue=550;
 const int whites=700;
 
 /*=======================RTC========================================================*/
-#include <DS3231.h>
+
 DS3231 rtc(SDA,SCL);
 
 /* ================================= SD READER ================================= */
-#include <SD.h> //Load SD card library
 
 int chipSelect = 10; //chipSelect pin for the SD card Reader
 File mySensorData; //Data object you will write your sensor data to
 static String filename;
 
 /* =================================    DHT    ================================= */
-#include <DHT.h>
+
 // using const will use more dynamic memory so here we should keep using #define
 #define DHTPIN 9
 #define DHTTYPE DHT11 // DHT11 sensor is smaller and blue the DHT22 is the white/larger 
-
 DHT dht(DHTPIN, DHTTYPE); // This means(pin plugged in, type which is "DHT11")
 
 /* =========================== VOID SETUP (RUN ONCE) =========================== */
 void setup(){
   FreqMeasure.begin();
-  // Serial.begin(9600);
+  Serial.begin(9600);
   pinMode(10, OUTPUT); //Must declare 10 an output and reserve it
   SD.begin(10); //Initialize the SD card reader
   pinMode(blue_led,OUTPUT);
@@ -63,19 +68,34 @@ void setup(){
 
   /* =========================== CREATE A NEW FILE =========================== */
 
+//  String timeString = String(rtc.getTimeStr());
+//  timeString[2] = '-';
+//  timeString[5] = '-';
+//  String timeString = String(rtc.getTime().hour) + '.' + String(rtc.getTime().min) + '.' + String(rtc.getTime().sec);
+//  filename = String(rtc.getDateStr(FORMAT_LONG,FORMAT_BIGENDIAN));
+//  filename[4] = '-';
+//  filename[7] = '-';
+//  filename = filename + '_' + timeString + ".csv";
+//  filename = String(rtc.getDateStr(FORMAT_LONG,FORMAT_BIGENDIAN)) + ".csv";
+//  filename = String(rtc.getUnixTime(rtc.getTime()));
+//  filename = "12345678.csv";
+//  Serial.println(filename);
+//  SD.mkdir(filename);
+
+  String month = rtc.getMonthStr();
+  SD.mkdir(month);
   String timeString = rtc.getTimeStr();
-  timeString[2] = '.';
-  timeString[5] = '.';
-  // String timeString = String(rtc.getTime().hour) + '.' + String(rtc.getTime().min) + '.' + String(rtc.getTime().sec);
-  filename = String(rtc.getDateStr(FORMAT_LONG,FORMAT_BIGENDIAN)) + '-' + timeString;
-  // Serial.println(filename);
+//  timeString = timeString[0] + timeString[1] + timeString[3] + timeString[4] + timeString[6] + timeString[7];
+  String dateDay = rtc.getDateStr();
+  filename = month + '/' + dateDay[0] + dateDay[1] +timeString[0] + timeString[1] + timeString[3] + timeString[4] + timeString[6] + timeString[7] + ".csv";
+//  String test = "Hello";
   mySensorData = SD.open(filename, FILE_WRITE);
   mySensorData.println("UnderWater Metal Detector Data Logging Accessory Rev2.0\nDate of the test:,");
   mySensorData.println(rtc.getDateStr());
   mySensorData.println("Starting time:,");
   mySensorData.println(rtc.getTimeStr());
   mySensorData.println("Color range:,");
-  mySensorData.println("Red(10Hz),Green(150hz),Yellow(250Hz),Purple(400Hz),LightBlue(550Hz),LowWhite(700Hz)");
+  mySensorData.println("Red(10Hz) Green(150hz) Yellow(250Hz) Purple(400Hz) LightBlue(550Hz) LowWhite(700Hz)");
   mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)");
   mySensorData.close();
 }
