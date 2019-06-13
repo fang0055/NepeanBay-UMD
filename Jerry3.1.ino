@@ -63,7 +63,7 @@ DHT dht(DHTPIN, DHTTYPE); // This means(pin plugged in, type which is "DHT11")
 
 void dateTime(unsigned int* date, unsigned int* time) {
  // return date using FAT_DATE macro to format fields
- *date = FAT_DATE(rtc.getTime().year, rtc.getTime().mon, rtc.getTime().date);
+ *date = FAT_DATE(rtc.getTime().year, rtc.getTime().mon, rtc.getTime().date);  
  // return time using FAT_TIME macro to format fields
  *time = FAT_TIME(rtc.getTime().hour, rtc.getTime().min, rtc.getTime().sec);
 }
@@ -80,9 +80,11 @@ void setup(){
   pinMode(green_led ,OUTPUT);
   rtc.begin();
 
-  // rtc.setTime(14, 51, 07); // Set the time/calibrate the time (24hr format)
+  // Can uncomment lines below to reset/calibrate the data and time.
+  // rtc.setTime(14, 51, 07); // Set/calibrate the time (24hr format)
+  // rtc.setDate(13, 6, 2019); // Set/calibrate the date to June 13th, 2019 (dd, mm, yyyy)
 
-  SdFile::dateTimeCallback(dateTime);
+  SdFile::dateTimeCallback(dateTime); // call dateTime function to add time attribute to the files.
 
   //CREATE A Folder and NEW FILE
   String month = rtc.getMonthStr();
