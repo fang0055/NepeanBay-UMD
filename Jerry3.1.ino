@@ -21,14 +21,13 @@ const int blue_led = 6;
 const int red_led = 3;
 const int green_led = 5;
 
-// use float instead of long refer to the official documentation. References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
 // use int won't cause any errors though. Will only get an int instead of float number.
-static float frequency = 0; // pin 49 --> PIN # IS IN LIBRARY
+static int frequency = 0; // pin 49 --> PIN # IS IN LIBRARY
 
 // use double instead of long refer to the official documentation. References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
 double sum = 0;
 int count = 0;
-const int avg = 30;
+const int avg = 20;
 unsigned long dataSavedTime = 0;
 const char sample[]={"\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)"};
 
@@ -58,7 +57,6 @@ static String filename;
 #define DHTTYPE DHT11 // DHT11 sensor is smaller and blue the DHT22 is the white/larger 
 DHT dht(DHTPIN, DHTTYPE); // This means(pin plugged in, type which is "DHT11")
 
-
 /* =========================== SET TIME ATTRIBUTE TO DATA FILES =========================== */
 
 void dateTime(unsigned int* date, unsigned int* time) {
@@ -72,7 +70,7 @@ void dateTime(unsigned int* date, unsigned int* time) {
 
 void setup(){
   FreqMeasure.begin();
-  Serial.begin(9600);
+//  Serial.begin(9600);
   pinMode(chipSelect, OUTPUT); //Must declare 10 an output and reserve it
   SD.begin(chipSelect); //Initialize the SD card reader
   pinMode(blue_led,OUTPUT);
@@ -80,13 +78,17 @@ void setup(){
   pinMode(green_led ,OUTPUT);
   rtc.begin();
 
-  // Can uncomment lines below to reset/calibrate the data and time.
-  // rtc.setTime(14, 51, 07); // Set/calibrate the time (24hr format)
-  // rtc.setDate(13, 6, 2019); // Set/calibrate the date to June 13th, 2019 (dd, mm, yyyy)
+//   Can uncomment lines below to reset/calibrate the data and time.
+//   rtc.setTime(14, 48, 07); // Set/calibrate the time (24hr format, hh,mm,ss)
+//   rtc.setDate(19, 6, 2019); // Set/calibrate the date to June 13th, 2019 (dd, mm, yyyy)
 
   SdFile::dateTimeCallback(dateTime); // call dateTime function to add time attribute to the files.
 
-  //CREATE A Folder and NEW FILE
+// CREATE A Folder and NEW FILE
+// If the real time clock works properly then the code will use current time as the file name which is more efficient
+// And if it doesn't work properly then the code will use increasing numbers as the file name which is less efficient
+
+  if (rtc.getTime().year > 2018){
   String month = rtc.getMonthStr();
   if(!SD.exists(month)){
     // create a folder using current month as its name
@@ -97,6 +99,17 @@ void setup(){
   // the filename contains the full file path, such as "June/07112351"
   filename = month + '/' + dateDay[0] + dateDay[1] +timeString[0] + timeString[1] + timeString[3] + timeString[4] + timeString[6] + timeString[7] + ".csv";
   // the file will be created inside the "month folder"
+  } 
+  else{
+    for (uint8_t i = 0; i < 1000; i++){
+      filename = "DATA-" + String(i) + ".csv";
+    if (! SD.exists(filename)){
+      // only open a new file if it doesn't exist
+      mySensorData = SD.open(filename, FILE_WRITE);
+      break;  // leave the loop!
+      }
+    }
+  }
   mySensorData = SD.open(filename, FILE_WRITE);
   mySensorData.println("UnderWater Metal Detector Data Logging Accessory Rev2.0\nDate of the test:,");
   mySensorData.println(rtc.getDateStr());
@@ -113,7 +126,7 @@ void loop() {
 }
 
 void Frequency(){
-  // FreqMeasure needs "zero handling" method to set frequency to zero. 
+  // FreqMeasure needs "zero handling" method to determine if the frequency should be zero or not. 
   // References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
   if (FreqMeasure.available()) {
     // average several readings together
@@ -127,7 +140,7 @@ void Frequency(){
       reset();
     }
   }
-  else if ( millis() - dataSavedTime > 300 ){
+  else if ( millis() - dataSavedTime > 200 ){
     // This is a Zero Handling. 
     // Add calculation on how much time has passed since we could get data last time and then determine if we consider the frequency is 0.
     // In this statement means, it's already 300 milliseconds passed which is long enough for us to regard the frequency as 0.
@@ -181,6 +194,16 @@ void ledLIGHT() {
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, LOW);
   }
+  else if ( (frequency <= purple) && (frequency > yellow) ){//Purple
+    digitalWrite( blue_led, HIGH);
+    digitalWrite( red_led, HIGH);
+    digitalWrite( green_led, LOW);
+  }
+  else if ( frequency > whites ){//Full White
+    digitalWrite( blue_led, HIGH);
+    digitalWrite( red_led, HIGH);
+    digitalWrite( green_led, HIGH);
+  }
   else if ( (frequency <= green) && (frequency > red) ){//Green
     digitalWrite( blue_led, LOW);
     digitalWrite( red_led, LOW);
@@ -191,24 +214,14 @@ void ledLIGHT() {
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, HIGH);
   }
-  else if ( (frequency <= purple) && (frequency > yellow) ){//Purple
-    digitalWrite( blue_led, HIGH);
-    digitalWrite( red_led, HIGH);
-    digitalWrite( green_led, LOW);
-  }
   else if ( (frequency <= lblue)&& (frequency > purple) ){//Lightblue
     digitalWrite( blue_led, HIGH);
     digitalWrite( red_led, LOW);
     digitalWrite( green_led, HIGH);
   }
-  else if ( (frequency <= whites)&& (frequency > lblue) ){//Low White
+  else {//Low White
     analogWrite( blue_led, 200);
     analogWrite( red_led, 100);
     analogWrite( green_led, 200);    
-  }
-  else {//Full White
-    digitalWrite( blue_led, HIGH);
-    digitalWrite( red_led, HIGH);
-    digitalWrite( green_led, HIGH);
   }
 }
