@@ -20,8 +20,7 @@
 const int blue_led = 6;
 const int red_led = 3;
 const int green_led = 5;
-
-// use int won't cause any errors though. Will only get an int instead of float number.
+// use int for frequency, which is float number, won't cause any errors. Will only get an integer instead of float number.
 static int frequency = 0; // pin 49 --> PIN # IS IN LIBRARY
 
 // use double instead of long refer to the official documentation. References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
@@ -29,9 +28,8 @@ double sum = 0;
 int count = 0;
 const int avg = 20;
 unsigned long dataSavedTime = 0;
-const char sample[]={"\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)"};
 
-/*================================== THRESHOLD ====================================*/
+/*================================== FREQUENCY THRESHOLD ====================================*/
 
 const int red=10;
 const int green=150;
@@ -70,7 +68,6 @@ void dateTime(unsigned int* date, unsigned int* time) {
 
 void setup(){
   FreqMeasure.begin();
-//  Serial.begin(9600);
   pinMode(chipSelect, OUTPUT); //Must declare 10 an output and reserve it
   SD.begin(chipSelect); //Initialize the SD card reader
   pinMode(blue_led,OUTPUT);
@@ -78,16 +75,17 @@ void setup(){
   pinMode(green_led ,OUTPUT);
   rtc.begin();
 
-//   Can uncomment lines below to reset/calibrate the data and time.
-//   rtc.setTime(14, 48, 07); // Set/calibrate the time (24hr format, hh,mm,ss)
-//   rtc.setDate(19, 6, 2019); // Set/calibrate the date to June 13th, 2019 (dd, mm, yyyy)
+//  Can uncomment lines below to reset/calibrate the data and time. 
+//  MUST comment the line begins with SdFile before or after uncomment the lines below. Sometimes without doing so will cause error to compile.
+//  rtc.setTime(14, 44, 07); // Set/calibrate the time (24hr format, hh,mm,ss)
+//  rtc.setDate(26, 6, 2019); // Set/calibrate the date to June 13th, 2019 (dd, mm, yyyy)
 
-  SdFile::dateTimeCallback(dateTime); // call dateTime function to add time attribute to the files.
+//  MUST comment the line below before or after uncomment the lines to set/calibrate the time. Sometimes without doing so will cause error to compile.
+   SdFile::dateTimeCallback(dateTime); // call dateTime function to add time attribute to the files.
 
 // CREATE A Folder and NEW FILE
-// If the real time clock works properly then the code will use current time as the file name which is more efficient
+// If the real-time clock works properly then the code will use current time as the file name which is more efficient
 // And if it doesn't work properly then the code will use increasing numbers as the file name which is less efficient
-
   if (rtc.getTime().year > 2018){
   String month = rtc.getMonthStr();
   if(!SD.exists(month)){
@@ -97,14 +95,14 @@ void setup(){
   String timeString = rtc.getTimeStr();
   String dateDay = rtc.getDateStr();
   // the filename contains the full file path, such as "June/07112351"
-  filename = month + '/' + dateDay[0] + dateDay[1] +timeString[0] + timeString[1] + timeString[3] + timeString[4] + timeString[6] + timeString[7] + ".csv";
   // the file will be created inside the "month folder"
-  } 
+  filename = month + '/' + dateDay[0] + dateDay[1] +timeString[0] + timeString[1] + timeString[3] + timeString[4] + timeString[6] + timeString[7] + ".csv";
+  }
   else{
     for (uint8_t i = 0; i < 1000; i++){
       filename = "DATA-" + String(i) + ".csv";
     if (! SD.exists(filename)){
-      // only open a new file if it doesn't exist
+      // only open/create a new file if it doesn't exist
       mySensorData = SD.open(filename, FILE_WRITE);
       break;  // leave the loop!
       }
@@ -122,14 +120,11 @@ void setup(){
 }
     
 void loop() {
-  Frequency();
-}
-
-void Frequency(){
+  // Measure the frequency
   // FreqMeasure needs "zero handling" method to determine if the frequency should be zero or not. 
   // References: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
   if (FreqMeasure.available()) {
-    // average several readings together
+    // average several frequency readings together, refered to official documentation: https://www.pjrc.com/teensy/td_libs_FreqMeasure.html 
     dataSavedTime = millis();
     sum = sum + FreqMeasure.read();
     count = count + 1;
@@ -143,8 +138,8 @@ void Frequency(){
   else if ( millis() - dataSavedTime > 200 ){
     // This is a Zero Handling. 
     // Add calculation on how much time has passed since we could get data last time and then determine if we consider the frequency is 0.
-    // In this statement means, it's already 300 milliseconds passed which is long enough for us to regard the frequency as 0.
-    // And if the time that has passed is less than 300 milliseconds, then we do nothing. 
+    // In this statement means, it's already 200 milliseconds passed which is long enough for us to regard the frequency as 0.
+    // And if the time that has passed is less than 200 milliseconds, then we do nothing. 
     // Because this is most likely just the interval of the FreqMeasure function.
     frequency = 0;
     digitalWrite( blue_led, LOW);
@@ -186,8 +181,8 @@ void reset(){
 // And putting those most likely happend condition in first places will also make the code a little more efficient.
 
 void ledLIGHT() {
-  // frequency <= red may be most likely to happen in real operation, so put it in the first place will make the if else statement more efficient.
-  // Because when the frequency is less than red, then the code will excute the code inside that situation then jump out of the whole if else statement.
+  // frequency <= red, or yellow < frequency <= purple, or frequency > white may most likely to happen in real operation, so put them in the first place will make the if else statement more efficient.
+  // Because when the frequency meets one of those 3 ranges, the code will excute the lines inside that situation then jump out of the whole if else statement.
   
   if (frequency <= red){//Red - No Signal
     digitalWrite( blue_led, LOW);
