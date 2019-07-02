@@ -31,12 +31,15 @@ unsigned long dataSavedTime = 0;
 
 /*================================== FREQUENCY THRESHOLD ====================================*/
 
-const int red=10;
-const int green=150;
-const int yellow=250;
-const int purple=400;
-const int lblue=550;
-const int whites=700;
+//const int red=10;
+//const int green=150;
+//const int yellow=250;
+//const int purple=400;
+//const int lblue=550;
+//const int whites=700;
+
+const int red=50;
+const int purple=450;
 
 /*===================================== RTC ======================================*/
 
@@ -81,25 +84,25 @@ void setup(){
 //  rtc.setDate(26, 6, 2019); // Set/calibrate the date to June 13th, 2019 (dd, mm, yyyy)
 
 //  MUST comment the line below before or after uncomment the lines to set/calibrate the time. Sometimes without doing so will cause error to compile.
-   SdFile::dateTimeCallback(dateTime); // call dateTime function to add time attribute to the files.
+  SdFile::dateTimeCallback(dateTime); // call dateTime function to add time attribute to the files.
 
 // CREATE A Folder and NEW FILE
 // If the real-time clock works properly then the code will use current time as the file name which is more efficient
 // And if it doesn't work properly then the code will use increasing numbers as the file name which is less efficient
-  if (rtc.getTime().year > 2018){
-  String month = rtc.getMonthStr();
-  if(!SD.exists(month)){
-    // create a folder using current month as its name
-    SD.mkdir(month);
-  }
-  String timeString = rtc.getTimeStr();
-  String dateDay = rtc.getDateStr();
-  // the filename contains the full file path, such as "June/07112351"
-  // the file will be created inside the "month folder"
-  filename = month + '/' + dateDay[0] + dateDay[1] +timeString[0] + timeString[1] + timeString[3] + timeString[4] + timeString[6] + timeString[7] + ".csv";
-  }
-  else{
-    for (uint8_t i = 0; i < 1000; i++){
+//  if (rtc.getTime().year > 2018){
+//  String month = rtc.getMonthStr();
+//  if(!SD.exists(month)){
+//    // create a folder using current month as its name
+//    SD.mkdir(month);
+//  }
+//  String timeString = rtc.getTimeStr();
+//  String dateDay = rtc.getDateStr();
+//  // the filename contains the full file path, such as "June/07112351"
+//  // the file will be created inside the "month folder"
+//  filename = month + '/' + dateDay[0] + dateDay[1] +timeString[0] + timeString[1] + timeString[3] + timeString[4] + timeString[6] + timeString[7] + ".csv";
+//  }
+//  else{
+    for (uint8_t i = 1; i < 1000; i++){
       filename = "DATA-" + String(i) + ".csv";
     if (! SD.exists(filename)){
       // only open/create a new file if it doesn't exist
@@ -107,7 +110,7 @@ void setup(){
       break;  // leave the loop!
       }
     }
-  }
+//  }
   mySensorData = SD.open(filename, FILE_WRITE);
   mySensorData.println("UnderWater Metal Detector Data Logging Accessory Rev2.0\nDate of the test:,");
   mySensorData.println(rtc.getDateStr());
@@ -183,40 +186,56 @@ void reset(){
 void ledLIGHT() {
   // frequency <= red, or yellow < frequency <= purple, or frequency > white may most likely to happen in real operation, so put them in the first place will make the if else statement more efficient.
   // Because when the frequency meets one of those 3 ranges, the code will excute the lines inside that situation then jump out of the whole if else statement.
-  
-  if (frequency <= red){//Red - No Signal
+
+  if (frequency <= red){ //Red - Noise
     digitalWrite( blue_led, LOW);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, LOW);
   }
-  else if ( (frequency <= purple) && (frequency > yellow) ){//Purple
+  else if ( (frequency <= purple) && (frequency > red) ){ //Purple
     digitalWrite( blue_led, HIGH);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, LOW);
   }
-  else if ( frequency > whites ){//Full White
+  else { // White
     digitalWrite( blue_led, HIGH);
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, HIGH);
   }
-  else if ( (frequency <= green) && (frequency > red) ){//Green
-    digitalWrite( blue_led, LOW);
-    digitalWrite( red_led, LOW);
-    digitalWrite( green_led, HIGH);
-  }
-  else if ( (frequency <= yellow) && (frequency > green) ){//Yellow
-    digitalWrite(blue_led,LOW);
-    digitalWrite( red_led, HIGH);
-    digitalWrite( green_led, HIGH);
-  }
-  else if ( (frequency <= lblue)&& (frequency > purple) ){//Lightblue
-    digitalWrite( blue_led, HIGH);
-    digitalWrite( red_led, LOW);
-    digitalWrite( green_led, HIGH);
-  }
-  else {//Low White
-    analogWrite( blue_led, 200);
-    analogWrite( red_led, 100);
-    analogWrite( green_led, 200);    
-  }
+
+//  if (frequency <= red){//Red - No Signal
+//    digitalWrite( blue_led, LOW);
+//    digitalWrite( red_led, HIGH);
+//    digitalWrite( green_led, LOW);
+//  }
+//  else if ( (frequency <= purple) && (frequency > yellow) ){//Purple
+//    digitalWrite( blue_led, HIGH);
+//    digitalWrite( red_led, HIGH);
+//    digitalWrite( green_led, LOW);
+//  }
+//  else if ( frequency > whites ){//Full White
+//    digitalWrite( blue_led, HIGH);
+//    digitalWrite( red_led, HIGH);
+//    digitalWrite( green_led, HIGH);
+//  }
+//  else if ( (frequency <= green) && (frequency > red) ){//Green
+//    digitalWrite( blue_led, LOW);
+//    digitalWrite( red_led, LOW);
+//    digitalWrite( green_led, HIGH);
+//  }
+//  else if ( (frequency <= yellow) && (frequency > green) ){//Yellow
+//    digitalWrite(blue_led,LOW);
+//    digitalWrite( red_led, HIGH);
+//    digitalWrite( green_led, HIGH);
+//  }
+//  else if ( (frequency <= lblue)&& (frequency > purple) ){//Lightblue
+//    digitalWrite( blue_led, HIGH);
+//    digitalWrite( red_led, LOW);
+//    digitalWrite( green_led, HIGH);
+//  }
+//  else {//Low White
+//    analogWrite( blue_led, 200);
+//    analogWrite( red_led, 100);
+//    analogWrite( green_led, 200);    
+//  }
 }
