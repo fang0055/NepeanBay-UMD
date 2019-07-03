@@ -9,9 +9,9 @@
 /* ==================================== LIBRARIES ==================================== */
 
 #include <FreqMeasure.h>
-#include <SD.h> // SD card library
+#include <SD.h> // SD card library  
 #include <DS3231.h> // real time clock
-#include <DHT.h>
+//#include <DHT.h>
 
 /* ================================= METAL DETECTOR ================================= */
 
@@ -54,9 +54,9 @@ static String filename;
 /* ==================================== DHT ===================================== */
 
 // using const will use more dynamic memory so here we should keep using #define
-#define DHTPIN 9
-#define DHTTYPE DHT11 // DHT11 sensor is smaller and blue the DHT22 is the white/larger 
-DHT dht(DHTPIN, DHTTYPE); // This means(pin plugged in, type which is "DHT11")
+//#define DHTPIN 9
+//#define DHTTYPE DHT11 // DHT11 sensor is smaller and blue the DHT22 is the white/larger 
+//DHT dht(DHTPIN, DHTTYPE); // This means(pin plugged in, type which is "DHT11")
 
 /* =========================== SET TIME ATTRIBUTE TO DATA FILES =========================== */
 
@@ -117,8 +117,10 @@ void setup(){
   mySensorData.println("Starting time:,");
   mySensorData.println(rtc.getTimeStr());
   mySensorData.println("Color range:,");
+//  mySensorData.println("Red(10Hz) Green(150hz) Yellow(250Hz) Purple(400Hz) LightBlue(550Hz) LowWhite(700Hz)");
   mySensorData.println("Red(10Hz) Green(150hz) Yellow(250Hz) Purple(400Hz) LightBlue(550Hz) LowWhite(700Hz)");
-  mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)");
+  mySensorData.println("\nTime,Frequency (Hz)");
+//  mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)");
   mySensorData.close();
 }
     
@@ -138,11 +140,11 @@ void loop() {
       reset();
     }
   }
-  else if ( millis() - dataSavedTime > 200 ){
+  else if ( millis() - dataSavedTime > 100 ){
     // This is a Zero Handling. 
     // Add calculation on how much time has passed since we could get data last time and then determine if we consider the frequency is 0.
-    // In this statement means, it's already 200 milliseconds passed which is long enough for us to regard the frequency as 0.
-    // And if the time that has passed is less than 200 milliseconds, then we do nothing. 
+    // In this statement means, it's already 160 milliseconds passed which is long enough for us to regard the frequency as 0.
+    // And if the time that has passed is less than 160 milliseconds, then we do nothing. 
     // Because this is most likely just the interval of the FreqMeasure function.
     frequency = 0;
     digitalWrite( blue_led, LOW);
@@ -158,17 +160,17 @@ void loop() {
 /* =========================== Logs information on SD Card =========================== */
 
 void sdCard(){
-  float h = dht.readHumidity(); //READING THE HUMIDITY %
-  float t = dht.readTemperature();
+//  float h = dht.readHumidity(); //READING THE HUMIDITY %
+//  float t = dht.readTemperature();
   mySensorData = SD.open(filename, FILE_WRITE);
-  mySensorData.print("\n");
   mySensorData.print(rtc.getTimeStr());
   mySensorData.print(",");
   mySensorData.print(frequency); //Print Your results
-  mySensorData.print(",");
-  mySensorData.print(h);
-  mySensorData.print(",");
-  mySensorData.print(t);
+//  mySensorData.print(",");
+//  mySensorData.print(h);
+//  mySensorData.print(",");
+//  mySensorData.print(t);
+  mySensorData.print("\n");
   mySensorData.close();
 }
 
