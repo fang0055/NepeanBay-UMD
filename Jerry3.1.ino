@@ -3,15 +3,15 @@
   DESCRIPTION: THIS PROGRAM IS TO LOG FREQUENCY AND HUMIDITY VALUES THAT CAN BE TRANSFERRED TO AN EXCEL FILE AND EVERY
   TIME YOU DISCONNECT AND RECONNECT THE POWER IT WILL SAVE A NEW FILE AS LONG AS IT IS A TWO DIGIT NUMBER. IT COLLECTS 
   FREQUENCY AND HUMIDITY VALUES.
-  Latest entry on May 15th, 2019
+  Latest entry on July 4th, 2019
  */
 
 /* ==================================== LIBRARIES ==================================== */
 
 #include <FreqMeasure.h>
 #include <SD.h> // SD card library  
-#include <DS3231.h> // real time clock
-//#include <DHT.h>
+#include <DS3231.h> // real time clock library
+//#include <DHT.h> // Temperature and humidity library
 
 /* ================================= METAL DETECTOR ================================= */
 
@@ -163,8 +163,8 @@ void loop() {
 /* =========================== Logs information on SD Card =========================== */
 
 void sdCard(){
-//  float h = dht.readHumidity(); //READING THE HUMIDITY %
-//  float t = dht.readTemperature();
+//  float h = dht.readHumidity(); //Read the humidity %
+//  float t = dht.readTemperature(); //Read the temperature
   mySensorData = SD.open(filename, FILE_WRITE);
   mySensorData.print(rtc.getTimeStr());
   mySensorData.print(",");
