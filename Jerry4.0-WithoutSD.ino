@@ -28,13 +28,6 @@ unsigned long dataSavedTime = 0;
 
 /*================================== FREQUENCY THRESHOLD ====================================*/
 
-//const int red=10;
-//const int green=150;
-//const int yellow=250;
-//const int purple=400;
-//const int lblue=550;
-//const int whites=700;
-
 const int red=50;
 const int purple=450;
 
@@ -107,40 +100,4 @@ void ledLIGHT() {
     digitalWrite( red_led, HIGH);
     digitalWrite( green_led, HIGH);
   }
-
-//  if (frequency <= red){//Red - No Signal
-//    digitalWrite( blue_led, LOW);
-//    digitalWrite( red_led, HIGH);
-//    digitalWrite( green_led, LOW);
-//  }
-//  else if ( (frequency <= purple) && (frequency > yellow) ){//Purple
-//    digitalWrite( blue_led, HIGH);
-//    digitalWrite( red_led, HIGH);
-//    digitalWrite( green_led, LOW);
-//  }
-//  else if ( frequency > whites ){//Full White
-//    digitalWrite( blue_led, HIGH);
-//    digitalWrite( red_led, HIGH);
-//    digitalWrite( green_led, HIGH);
-//  }
-//  else if ( (frequency <= green) && (frequency > red) ){//Green
-//    digitalWrite( blue_led, LOW);
-//    digitalWrite( red_led, LOW);
-//    digitalWrite( green_led, HIGH);
-//  }
-//  else if ( (frequency <= yellow) && (frequency > green) ){//Yellow
-//    digitalWrite(blue_led,LOW);
-//    digitalWrite( red_led, HIGH);
-//    digitalWrite( green_led, HIGH);
-//  }
-//  else if ( (frequency <= lblue)&& (frequency > purple) ){//Lightblue
-//    digitalWrite( blue_led, HIGH);
-//    digitalWrite( red_led, LOW);
-//    digitalWrite( green_led, HIGH);
-//  }
-//  else {//Low White
-//    analogWrite( blue_led, 200);
-//    analogWrite( red_led, 100);
-//    analogWrite( green_led, 200);    
-//  }
 }
