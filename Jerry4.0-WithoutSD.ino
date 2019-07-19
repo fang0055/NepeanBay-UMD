@@ -9,8 +9,6 @@
 /* ==================================== LIBRARIES ==================================== */
 
 #include <FreqMeasure.h>
-#include <DS3231.h> // real time clock library
-//#include <DHT.h> // Temperature and humidity library
 
 /* ================================= METAL DETECTOR ================================= */
 
@@ -40,17 +38,6 @@ unsigned long dataSavedTime = 0;
 const int red=50;
 const int purple=450;
 
-/*===================================== RTC ======================================*/
-
-DS3231 rtc(SDA,SCL);
-
-/* ==================================== DHT ===================================== */
-
-// using const will use more dynamic memory so here we should keep using #define
-//#define DHTPIN 9
-//#define DHTTYPE DHT11 // DHT11 sensor is smaller and blue the DHT22 is the white/larger 
-//DHT dht(DHTPIN, DHTTYPE); // This means(pin plugged in, type which is "DHT11")
-
 /* =========================== VOID SETUP (RUN ONCE) =========================== */
 
 void setup(){
@@ -58,13 +45,6 @@ void setup(){
   pinMode(blue_led,OUTPUT);
   pinMode(red_led,OUTPUT);
   pinMode(green_led ,OUTPUT);
-  rtc.begin();
-
-//  Can uncomment lines below to reset/calibrate the data and time. 
-//  MUST comment the line begins with SdFile before or after uncomment the lines below. Sometimes without doing so will cause error to compile.
-//  rtc.setTime(14, 44, 07); // Set/calibrate the time (24hr format, hh,mm,ss)
-//  rtc.setDate(26, 6, 2019); // Set/calibrate the date to June 13th, 2019 (dd, mm, yyyy)
-
 }
     
 void loop() {
