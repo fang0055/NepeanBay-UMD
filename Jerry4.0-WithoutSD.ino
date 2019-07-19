@@ -9,7 +9,6 @@
 /* ==================================== LIBRARIES ==================================== */
 
 #include <FreqMeasure.h>
-#include <SD.h> // SD card library  
 #include <DS3231.h> // real time clock library
 //#include <DHT.h> // Temperature and humidity library
 
@@ -45,12 +44,6 @@ const int purple=450;
 
 DS3231 rtc(SDA,SCL);
 
-/* ================================= SD READER ================================== */
-
-int chipSelect = 10; //chipSelect pin for the SD card Reader
-File mySensorData; //Data object you will write your sensor data to
-static String filename;
-
 /* ==================================== DHT ===================================== */
 
 // using const will use more dynamic memory so here we should keep using #define
@@ -58,21 +51,10 @@ static String filename;
 //#define DHTTYPE DHT11 // DHT11 sensor is smaller and blue the DHT22 is the white/larger 
 //DHT dht(DHTPIN, DHTTYPE); // This means(pin plugged in, type which is "DHT11")
 
-/* =========================== SET TIME ATTRIBUTE TO DATA FILES =========================== */
-
-void dateTime(unsigned int* date, unsigned int* time) {
- // return date using FAT_DATE macro to format fields
- *date = FAT_DATE(rtc.getTime().year, rtc.getTime().mon, rtc.getTime().date);  
- // return time using FAT_TIME macro to format fields
- *time = FAT_TIME(rtc.getTime().hour, rtc.getTime().min, rtc.getTime().sec);
-}
-
 /* =========================== VOID SETUP (RUN ONCE) =========================== */
 
 void setup(){
   FreqMeasure.begin();
-  pinMode(chipSelect, OUTPUT); //Must declare 10 an output and reserve it
-  SD.begin(chipSelect); //Initialize the SD card reader
   pinMode(blue_led,OUTPUT);
   pinMode(red_led,OUTPUT);
   pinMode(green_led ,OUTPUT);
@@ -83,48 +65,6 @@ void setup(){
 //  rtc.setTime(14, 44, 07); // Set/calibrate the time (24hr format, hh,mm,ss)
 //  rtc.setDate(26, 6, 2019); // Set/calibrate the date to June 13th, 2019 (dd, mm, yyyy)
 
-//  MUST comment the line below before or after uncomment the lines to set/calibrate the time. Sometimes without doing so will cause error to compile.
-  SdFile::dateTimeCallback(dateTime); // call dateTime function to add time attribute to the files.
-
-// CREATE A Folder and NEW FILE using ddhhmmss as the name
-// If the real-time clock works properly then the code will use current time as the file name which is more efficient
-// And if it doesn't work properly then the code will use increasing numbers as the file name which is less efficient
-
-//  if (rtc.getTime().year > 2018){
-//  String month = rtc.getMonthStr();
-//  if(!SD.exists(month)){
-//    // create a folder using current month as its name
-//    SD.mkdir(month);
-//  }
-//  String timeString = rtc.getTimeStr();
-//  String dateDay = rtc.getDateStr();
-//  // the filename contains the full file path, such as "June/07112351"
-//  // the file will be created inside the "month folder"
-//  filename = month + '/' + dateDay[0] + dateDay[1] +timeString[0] + timeString[1] + timeString[3] + timeString[4] + timeString[6] + timeString[7] + ".csv";
-//  }
-//  else{
-
-    for (uint8_t i = 1; i < 1000; i++){
-      filename = "DATA-" + String(i) + ".csv";
-    if (! SD.exists(filename)){
-      // only open/create a new file if it doesn't exist
-      mySensorData = SD.open(filename, FILE_WRITE);
-      break;  // leave the loop!
-      }
-    }
-//  }
-
-  mySensorData = SD.open(filename, FILE_WRITE);
-  mySensorData.println("UnderWater Metal Detector Data Logging Accessory Rev2.0\nDate of the test:,");
-  mySensorData.println(rtc.getDateStr());
-  mySensorData.println("Starting time:,");
-  mySensorData.println(rtc.getTimeStr());
-  mySensorData.println("Color range:,");
-//  mySensorData.println("Red(10Hz) Green(150hz) Yellow(250Hz) Purple(400Hz) LightBlue(550Hz) LowWhite(700Hz)");
-  mySensorData.println("Red(50Hz) Purple(450Hz) LowWhite(451Hz and higher)");
-  mySensorData.println("\nTime,Frequency (Hz)");
-//  mySensorData.println("\nTime,Frequency (Hz),Humidity (%),Temperature (Celsius)");
-  mySensorData.close();
 }
     
 void loop() {
@@ -139,7 +79,6 @@ void loop() {
     if (count > avg) {
       frequency = FreqMeasure.countToFrequency(sum / count);
       ledLIGHT();
-      sdCard();
       reset();
     }
   }
@@ -153,29 +92,10 @@ void loop() {
     digitalWrite( blue_led, LOW);
     analogWrite( red_led, 100);
     digitalWrite( green_led, LOW);
-    sdCard();
-  }
-  else{
-    sdCard();
   }
 }
 
-/* =========================== Logs information on SD Card =========================== */
-
-void sdCard(){
-//  float h = dht.readHumidity(); //Read the humidity %
-//  float t = dht.readTemperature(); //Read the temperature
-  mySensorData = SD.open(filename, FILE_WRITE);
-  mySensorData.print(rtc.getTimeStr());
-  mySensorData.print(",");
-  mySensorData.print(frequency); //Print Your results
-//  mySensorData.print(",");
-//  mySensorData.print(h);
-//  mySensorData.print(",");
-//  mySensorData.print(t);
-  mySensorData.print("\n");
-  mySensorData.close();
-}
+/* =========================== Reset the value =========================== */
 
 void reset(){
   count = 0;
